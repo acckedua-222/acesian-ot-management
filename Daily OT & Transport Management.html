@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Daily OT & Transport Management</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f6f9;--card:#fff;--text:#172033;--muted:#6b7280;--line:#e5e7eb;--head:#f8fafc;--input:#fff;--btn:#e5e7eb;--btntext:#111827;--primary:#2563eb;--green:#16a34a;--red:#dc2626;--notice-bg:#eff6ff;--notice-bd:#bfdbfe;--notice-tx:#1e40af}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--line:#334155;--head:#273449;--input:#0f172a;--btn:#334155;--btntext:#e2e8f0;--notice-bg:#1e3a5f;--notice-bd:#2b5486;--notice-tx:#bfdbfe}}
+:root[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--text:#e2e8f0;--muted:#94a3b8;--line:#334155;--head:#273449;--input:#0f172a;--btn:#334155;--btntext:#e2e8f0;--notice-bg:#1e3a5f;--notice-bd:#2b5486;--notice-tx:#bfdbfe}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#111827;color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+header h1{font-size:20px;margin:0}.small{font-size:12px;color:#cbd5e1}
+.container{max-width:1400px;margin:auto;padding:22px}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+button{border:0;border-radius:9px;padding:10px 14px;font-weight:600;cursor:pointer;background:var(--btn);color:var(--btntext);font:inherit;font-weight:600}
+.primary,.nav button.active{background:var(--primary);color:#fff}.green{background:var(--green);color:#fff}.danger{background:var(--red);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px}
+.card h2{margin-top:0}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.grid3{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat{padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--card)}.stat .n{font-size:28px;font-weight:800;margin-top:4px}.stat .l,.muted{color:var(--muted);font-size:13px}
+label{font-size:12px;font-weight:700;display:block;margin-bottom:6px}
+input,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--input);color:var(--text);font:inherit}
+.toolbar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}th,td{padding:11px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:14px}th{background:var(--head);font-size:12px;text-transform:uppercase;color:var(--muted)}
+.status{font-weight:700;min-width:130px}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}.a{background:#dbeafe;color:#1d4ed8}.s{background:#f3e8ff;color:#6d28d9}.ot{background:#ffedd5;color:#c2410c}.normal{background:#dcfce7;color:#15803d}.leave{background:#fee2e2;color:#b91c1c}
+.hidden{display:none}.empty{padding:30px;text-align:center;color:var(--muted)}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.dept{background:var(--card);color:var(--text);border:1px solid var(--line);padding:18px;text-align:left}.dept strong{display:block;font-size:16px;margin-bottom:6px}.dept.sel{border-color:var(--primary);box-shadow:0 0 0 2px var(--primary)}
+.notice{background:var(--notice-bg);border:1px solid var(--notice-bd);color:var(--notice-tx);padding:12px;border-radius:9px;font-size:13px;margin-bottom:16px}
+.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:900px){.grid,.grid3,.dgrid{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr}.container{padding:12px}header{padding:14px}}
+@media(max-width:560px){.dgrid{grid-template-columns:1fr}th,td{padding:9px 6px;font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Daily OT & Transport Management</h1><div class="small">Department PIC • HR Dashboard</div></div>
+  <div class="small" id="clock"></div>
+</header>
+<div class="container">
+  <div class="nav">
+    <button id="navDept" class="active" onclick="showPage('dept')">Department Update</button>
+    <button id="navHR" onclick="showPage('hr')">HR Dashboard</button>
+    <button id="navTransport" onclick="showPage('transport')">Transport Planning</button>
+    <button id="navSettings" onclick="showPage('settings')">Settings</button>
+  </div>
+
+  <section id="pageDept">
+    <div class="card"><h2>1. Select Department</h2><div class="dgrid" id="deptButtons"></div></div>
+    <div id="deptPanel" class="card hidden">
+      <div class="toolbar">
+        <div><label>Date</label><input type="date" id="workDate"></div>
+        <div><label>Department</label><input id="selectedDept" readonly></div>
+        <div><label>PIC / Submitted By</label><input id="picName" placeholder="Enter PIC name"></div>
+      </div>
+      <div class="notice">PIC only needs to select the status beside each employee. Employee names and type are loaded from the master list.</div>
+      <div class="tw"><table>
+        <thead><tr><th>Employee</th><th>Type</th><th>Transport</th><th>Status / OT Finish</th></tr></thead>
+        <tbody id="employeeRows"></tbody>
+      </table></div>
+      <div class="actions"><button onclick="resetDept()">Reset</button><button class="green" onclick="submitDepartment()">Submit Daily Record</button></div>
+    </div>
+  </section>
+
+  <section id="pageHR" class="hidden">
+    <div class="card"><div class="toolbar">
+      <div><label>Date</label><input type="date" id="hrDate" onchange="renderHR()"></div>
+      <div><label>Department</label><select id="hrDept" onchange="renderHR()"></select></div>
+      <div><label>Employee Type</label><select id="hrType" onchange="renderHR()"><option value="">All</option><option>Acesian</option><option>Subcon</option></select></div>
+    </div></div>
+    <div class="grid" id="stats"></div>
+    <div class="card"><h2>Department Analysis</h2><div class="tw"><table>
+      <thead><tr><th>Department</th><th>Acesian</th><th>Subcon</th><th>Normal</th><th>8:30 PM</th><th>10:00 PM</th><th>12:00 AM</th><th>Other OT</th></tr></thead>
+      <tbody id="analysisRows"></tbody></table></div></div>
+    <div class="card"><h2>Employee Details</h2><div class="tw"><table>
+      <thead><tr><th>Name</th><th>Department</th><th>Type</th><th>Status</th><th>Transport</th><th>PIC</th></tr></thead>
+      <tbody id="detailRows"></tbody></table></div></div>
+  </section>
+
+  <section id="pageTransport" class="hidden">
+    <div class="card"><div class="toolbar">
+      <div><label>Date</label><input type="date" id="transportDate" onchange="renderTransport()"></div>
+      <div><label>Transport</label><select id="transportType" onchange="renderTransport()"><option>Bus</option><option>Own Transport</option></select></div>
+      <div><label>Filter</label><select id="transportFinish" onchange="renderTransport()"><option value="">All OT</option><option>8:30 PM</option><option>10:00 PM</option><option>12:00 AM</option><option>Other OT</option></select></div>
+    </div></div>
+    <div class="grid3" id="transportCards"></div>
+    <div class="card"><h2>Passenger List</h2><div class="tw"><table>
+      <thead><tr><th>Finish Time</th><th>Name</th><th>Type</th><th>Department</th><th>Transport</th></tr></thead>
+      <tbody id="transportRows"></tbody></table></div></div>
+  </section>
+
+  <section id="pageSettings" class="hidden">
+    <div class="card">
+      <h2>System Settings</h2>
+      <div class="notice">Records are saved in this browser only (not shared between devices). Use Import / Export below to manage the employee master list.</div>
+      <button class="danger" onclick="clearData()">Clear Attendance Data</button>
+    </div>
+    <div class="card"><h3 style="margin-top:0">Employee Master <span class="muted" id="masterCount"></span></h3>
+      <div class="notice">Excel columns (row 1 = header): <b>ID, Name, Department, Type, Transport</b>. Type = Acesian / Subcon. Transport = Bus / Own Transport. Importing replaces the whole master list.</div>
+      <div class="actions" style="justify-content:flex-start;flex-wrap:wrap;margin:0 0 14px">
+        <button class="primary" onclick="exportMaster()">Export to Excel</button>
+        <button class="green" onclick="$('importFile').click()">Import from Excel</button>
+        <button onclick="downloadTemplate()">Download Template</button>
+        <button onclick="resetMaster()">Reset to Default</button>
+        <input type="file" id="importFile" accept=".xlsx,.xls,.csv" class="hidden" onchange="importMaster(this)">
+      </div>
+      <div class="tw"><table>
+      <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Type</th><th>Transport</th></tr></thead>
+      <tbody id="masterRows"></tbody></table></div></div>
+  </section>
+</div>
+<footer>Daily OT & Transport Management</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const DEPARTMENTS=["Incoming","Laser","Forming","Welding","Grinding","Sandblast","Washing","Coating","QC","Packing","Logistic"];
+const STATUSES=["-","A/L","MC","EL","Absent","8:30 PM","10:00 PM","12:00 AM","Other OT"];
+const DEFAULT_EMPLOYEES=[
+{id:"A001",name:"Hilfiy",department:"QC",type:"Acesian",transport:"Bus"},
+{id:"A002",name:"Ariffin",department:"QC",type:"Acesian",transport:"Own Transport"},
+{id:"A003",name:"Azim",department:"QC",type:"Acesian",transport:"Bus"},
+{id:"A004",name:"Myowin",department:"QC",type:"Acesian",transport:"Bus"},
+{id:"A005",name:"Raymond",department:"QC",type:"Acesian",transport:"Own Transport"},
+{id:"S001",name:"QC Subcon 1",department:"QC",type:"Subcon",transport:"Bus"},
+{id:"S002",name:"QC Subcon 2",department:"QC",type:"Subcon",transport:"Bus"},
+{id:"S003",name:"QC Subcon 3",department:"QC",type:"Subcon",transport:"Bus"},
+{id:"C001",name:"Coating Staff 1",department:"Coating",type:"Acesian",transport:"Bus"},
+{id:"C002",name:"Coating Staff 2",department:"Coating",type:"Acesian",transport:"Own Transport"},
+{id:"C003",name:"Coating Staff 3",department:"Coating",type:"Acesian",transport:"Bus"},
+{id:"C004",name:"Coating Subcon 1",department:"Coating",type:"Subcon",transport:"Bus"},
+{id:"W001",name:"Welding Staff 1",department:"Welding",type:"Acesian",transport:"Bus"},
+{id:"W002",name:"Welding Staff 2",department:"Welding",type:"Acesian",transport:"Own Transport"},
+{id:"W003",name:"Welding Subcon 1",department:"Welding",type:"Subcon",transport:"Bus"}
+];
+const TYPES=["Acesian","Subcon"],TRANSPORTS=["Bus","Own Transport"];
+let selectedDepartment="",memStore=[],memMaster=null;
+const $=id=>document.getElementById(id);
+function loadMaster(){try{const v=localStorage.getItem("otMaster");if(v)return JSON.parse(v)}catch(e){}return memMaster||DEFAULT_EMPLOYEES.map(e=>({...e}))}
+function saveMaster(l){EMPLOYEES=l;memMaster=l;try{localStorage.setItem("otMaster",JSON.stringify(l))}catch(e){}}
+let EMPLOYEES=loadMaster();
+function masterSheet(list){return XLSX.utils.json_to_sheet(list.map(e=>({ID:e.id,Name:e.name,Department:e.department,Type:e.type,Transport:e.transport})),{header:["ID","Name","Department","Type","Transport"]})}
+async function saveXlsx(list,filename){
+ if(typeof XLSX==="undefined")return alert("Excel library failed to load. Check your connection and reload.");
+ const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,masterSheet(list),"Employee_Master");
+ const buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+ let dl=null;try{dl=await claude.use("downloads")}catch(e){}
+ if(!dl)return alert("Download is not available in this view. Open the artifact in claude.ai to export.");
+ try{await dl.save({filename,data:buf})}catch(e){if(e&&e.code!=="declined")alert("Could not save file: "+(e.message||e.code))}
+}
+function exportMaster(){saveXlsx(EMPLOYEES,"Employee_Master.xlsx")}
+function downloadTemplate(){saveXlsx([{id:"A001",name:"Example Name",department:"QC",type:"Acesian",transport:"Bus"}],"Employee_Master_Template.xlsx")}
+function resetMaster(){if(confirm("Reset employee master to the default sample list?")){saveMaster(DEFAULT_EMPLOYEES.map(e=>({...e})));refreshMaster()}}
+function refreshMaster(){renderDeptButtons();renderMaster();selectedDepartment="";$("deptPanel").classList.add("hidden")}
+function importMaster(inp){
+ const f=inp.files[0];inp.value="";if(!f)return;
+ if(typeof XLSX==="undefined")return alert("Excel library failed to load. Check your connection and reload.");
+ const rd=new FileReader();
+ rd.onerror=()=>alert("Could not read the file.");
+ rd.onload=ev=>{
+  try{
+   const wb=XLSX.read(ev.target.result,{type:"array"});
+   const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:""});
+   const get=(r,k)=>{const c=Object.keys(r).find(x=>x.trim().toLowerCase()===k);return c?String(r[c]).trim():""};
+   const list=[],errs=[],seen=new Set();
+   rows.forEach((r,i)=>{
+    const id=get(r,"id"),name=get(r,"name"),d=get(r,"department"),t=get(r,"type"),tr=get(r,"transport")||"Bus";
+    if(!id&&!name&&!d)return;
+    const dep=DEPARTMENTS.find(x=>x.toLowerCase()===d.toLowerCase()),ty=TYPES.find(x=>x.toLowerCase()===t.toLowerCase()),tp=TRANSPORTS.find(x=>x.toLowerCase()===tr.toLowerCase());
+    const row=i+2;
+    if(!id||!name)errs.push(`Row ${row}: ID and Name are required`);
+    else if(seen.has(id))errs.push(`Row ${row}: duplicate ID "${id}"`);
+    else if(!dep)errs.push(`Row ${row}: unknown Department "${d}"`);
+    else if(!ty)errs.push(`Row ${row}: Type must be Acesian or Subcon`);
+    else if(!tp)errs.push(`Row ${row}: Transport must be Bus or Own Transport`);
+    else{seen.add(id);list.push({id,name,department:dep,type:ty,transport:tp})}
+   });
+   if(errs.length)return alert("Import cancelled. Please fix:\n\n"+errs.slice(0,8).join("\n")+(errs.length>8?`\n...and ${errs.length-8} more`:""));
+   if(!list.length)return alert("No employee rows found in the file.");
+   if(confirm(`Replace the current master list with ${list.length} employees from "${f.name}"?`)){saveMaster(list);refreshMaster();alert("Employee master imported.")}
+  }catch(e){alert("Could not read this file. Please use an .xlsx or .csv file.")}
+ };
+ rd.readAsArrayBuffer(f);
+}
+const today=new Date().toISOString().slice(0,10);
+["workDate","hrDate","transportDate"].forEach(i=>$(i).value=today);
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function data(){try{const v=localStorage.getItem("otRecords");return v?JSON.parse(v):memStore}catch(e){return memStore}}
+function saveData(d){memStore=d;try{localStorage.setItem("otRecords",JSON.stringify(d))}catch(e){}}
+function isOT(s){return ["8:30 PM","10:00 PM","12:00 AM","Other OT"].includes(s)}
+
+function renderDeptButtons(){
+ $("deptButtons").innerHTML=DEPARTMENTS.map(d=>`<button class="dept" data-d="${d}" onclick="selectDept('${d}')"><strong>${d}</strong><span class="muted">${EMPLOYEES.filter(e=>e.department===d).length} employees</span></button>`).join("");
+}
+function renderMaster(){
+ $("masterCount").textContent="("+EMPLOYEES.length+")";
+ $("masterRows").innerHTML=EMPLOYEES.map(e=>`<tr><td>${esc(e.id)}</td><td>${esc(e.name)}</td><td>${esc(e.department)}</td><td>${esc(e.type)}</td><td>${esc(e.transport)}</td></tr>`).join("");
+}
+function init(){
+ renderDeptButtons();renderMaster();
+ $("hrDept").innerHTML='<option value="">All Departments</option>'+DEPARTMENTS.map(d=>`<option>${d}</option>`).join("");
+ tick();setInterval(tick,1000);
+}
+function tick(){$("clock").textContent=new Date().toLocaleString("en-MY")}
+function showPage(p){
+ const pages={dept:"pageDept",hr:"pageHR",transport:"pageTransport",settings:"pageSettings"};
+ const navs={dept:"navDept",hr:"navHR",transport:"navTransport",settings:"navSettings"};
+ for(const k in pages){$(pages[k]).classList.toggle("hidden",k!==p);$(navs[k]).classList.toggle("active",k===p)}
+ if(p==="hr")renderHR();if(p==="transport")renderTransport();
+}
+function selectDept(d){
+ selectedDepartment=d;$("selectedDept").value=d;$("deptPanel").classList.remove("hidden");
+ document.querySelectorAll(".dept").forEach(b=>b.classList.toggle("sel",b.dataset.d===d));
+ const saved=data().filter(r=>r.date===$("workDate").value&&r.department===d);
+ const map=Object.fromEntries(saved.map(r=>[r.employeeId,r.status]));
+ if(saved[0])$("picName").value=saved[0].pic;
+ $("employeeRows").innerHTML=EMPLOYEES.filter(e=>e.department===d).map(e=>{
+  const v=map[e.id]||"-";
+  return `<tr><td><b>${esc(e.name)}</b><br><span class="muted">${e.id}</span></td><td><span class="badge ${e.type==="Acesian"?"a":"s"}">${e.type}</span></td><td>${esc(e.transport)}</td><td><select class="status" data-id="${e.id}">${STATUSES.map(s=>`<option ${s===v?"selected":""}>${s}</option>`).join("")}</select></td></tr>`;
+ }).join("")||`<tr><td colspan="4" class="empty">No employees found for this department.</td></tr>`;
+}
+$("workDate").addEventListener("change",()=>{if(selectedDepartment)selectDept(selectedDepartment)});
+function resetDept(){if(selectedDepartment)selectDept(selectedDepartment)}
+function submitDepartment(){
+ if(!selectedDepartment)return alert("Please select a department.");
+ const pic=$("picName").value.trim();
+ if(!pic)return alert("Please enter PIC / Submitted By.");
+ const date=$("workDate").value,now=new Date().toISOString();
+ const records=data().filter(r=>!(r.date===date&&r.department===selectedDepartment));
+ document.querySelectorAll("#employeeRows select").forEach(sel=>{
+  const e=EMPLOYEES.find(x=>x.id===sel.dataset.id);
+  records.push({date,department:selectedDepartment,pic,employeeId:e.id,employeeName:e.name,employeeType:e.type,status:sel.value,transportType:e.transport,submissionTime:now});
+ });
+ saveData(records);alert("Daily record saved successfully.");
+}
+function renderHR(){
+ const date=$("hrDate").value,dep=$("hrDept").value,type=$("hrType").value;
+ const rows=data().filter(r=>r.date===date&&(!dep||r.department===dep)&&(!type||r.employeeType===type));
+ const n=f=>rows.filter(f).length,st=s=>n(r=>r.status===s);
+ const stats=[["Total Employees",rows.length],["Acesian",n(r=>r.employeeType==="Acesian")],["Subcon",n(r=>r.employeeType==="Subcon")],["Normal / No OT",st("-")],["A/L",st("A/L")],["MC",st("MC")],["Early Leave",st("EL")],["Absent",st("Absent")],["OT 8:30 PM",st("8:30 PM")],["OT 10:00 PM",st("10:00 PM")],["OT 12:00 AM",st("12:00 AM")],["Other OT",st("Other OT")]];
+ $("stats").innerHTML=stats.map(x=>`<div class="stat"><div class="l">${x[0]}</div><div class="n">${x[1]}</div></div>`).join("");
+ $("analysisRows").innerHTML=DEPARTMENTS.filter(d=>rows.some(r=>r.department===d)).map(d=>{
+  const c=s=>rows.filter(r=>r.department===d&&r.status===s).length,t=y=>rows.filter(r=>r.department===d&&r.employeeType===y).length;
+  return `<tr><td><b>${d}</b></td><td>${t("Acesian")}</td><td>${t("Subcon")}</td><td>${c("-")}</td><td>${c("8:30 PM")}</td><td>${c("10:00 PM")}</td><td>${c("12:00 AM")}</td><td>${c("Other OT")}</td></tr>`;
+ }).join("")||`<tr><td colspan="8" class="empty">No records for this date.</td></tr>`;
+ $("detailRows").innerHTML=rows.map(r=>{
+  const cls=isOT(r.status)?"ot":r.status==="-"?"normal":"leave";
+  return `<tr><td>${esc(r.employeeName)}</td><td>${esc(r.department)}</td><td><span class="badge ${r.employeeType==="Acesian"?"a":"s"}">${r.employeeType}</span></td><td><span class="badge ${cls}">${esc(r.status)}</span></td><td>${esc(r.transportType)}</td><td>${esc(r.pic)}</td></tr>`;
+ }).join("")||`<tr><td colspan="6" class="empty">No records for this date.</td></tr>`;
+}
+function renderTransport(){
+ const date=$("transportDate").value,tr=$("transportType").value,fin=$("transportFinish").value;
+ const rows=data().filter(r=>r.date===date&&r.transportType===tr&&isOT(r.status)&&(!fin||r.status===fin));
+ $("transportCards").innerHTML=["8:30 PM","10:00 PM","12:00 AM","Other OT"].map(g=>{const x=rows.filter(r=>r.status===g);return `<div class="stat"><div class="l">${g}</div><div class="n">${x.length}</div><div class="muted">Acesian: ${x.filter(r=>r.employeeType==="Acesian").length} • Subcon: ${x.filter(r=>r.employeeType==="Subcon").length}</div></div>`}).join("");
+ $("transportRows").innerHTML=rows.map(r=>`<tr><td>${esc(r.status)}</td><td><b>${esc(r.employeeName)}</b></td><td>${esc(r.employeeType)}</td><td>${esc(r.department)}</td><td>${esc(r.transportType)}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">No passengers found.</td></tr>`;
+}
+function clearData(){if(confirm("Clear all attendance records?")){memStore=[];try{localStorage.removeItem("otRecords")}catch(e){}renderHR();renderTransport();alert("Attendance data cleared.")}}
+init();
+</script>
+</body>
+</html>
